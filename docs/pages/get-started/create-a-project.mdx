@@ -1,24 +1,60 @@
----
-title: Create a project
-description: Learn how to create a new Expo project.
-hideTOC: true
----
+import React, { useState } from "react"; import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 
-import { Terminal } from '~/ui/components/Snippet';
+export default function HotWheelsApp() { const [collection, setCollection] = useState({}); const [selectedLote, setSelectedLote] = useState("A");
 
-System requirements:
+const cars = [ { id: 1, name: "Nissan Skyline GT-R (R34)", lote: "A", ano: 2025 }, { id: 2, name: "Toyota Supra", lote: "A", ano: 2025 }, { id: 3, name: "Chevy Camaro ZL1", lote: "B", ano: 2025 }, { id: 4, name: "Ford Mustang GT", lote: "B", ano: 2025 }, { id: 5, name: "Porsche 911 GT3", lote: "C", ano: 2025 }, ];
 
-- [Node.js (LTS)](https://nodejs.org/en/).
-- macOS, Windows (Powershell and [WSL 2](https://expo.fyi/wsl)), and Linux are supported.
+const lotes = [...new Set(cars.map((car) => car.lote))];
 
-We recommend starting with the default project created by `create-expo-app`. The default project includes example code to help you get started.
+const toggleOwned = (id) => { setCollection((prev) => ({ ...prev, [id]: { ...prev[id], owned: !prev[id]?.owned }, })); };
 
-To create a new project, run the following command:
+const toggleWishlist = (id) => { setCollection((prev) => ({ ...prev, [id]: { ...prev[id], wishlist: !prev[id]?.wishlist }, })); };
 
-<Terminal cmd={['$ npx create-expo-app@latest']} />
+const renderCar = ({ item }) => ( <View style={styles.card}> <View> <Text style={styles.carName}>{item.name}</Text> <Text style={styles.carInfo}>Lote {item.lote} - {item.ano}</Text> </View>
 
-> You can choose a different template by adding the [`--template` option](/more/create-expo/#--template).
+<View style={styles.actions}>
+    <TouchableOpacity
+      style={[styles.button, collection[item.id]?.owned && styles.buttonActive]}
+      onPress={() => toggleOwned(item.id)}
+    >
+      <Text style={styles.buttonText}>{collection[item.id]?.owned ? "Tenho" : "Marcar"}</Text>
+    </TouchableOpacity>
 
-## Next step
+    <TouchableOpacity
+      style={[styles.button, collection[item.id]?.wishlist && styles.buttonActive]}
+      onPress={() => toggleWishlist(item.id)}
+    >
+      <Text style={styles.buttonText}>Wishlist</Text>
+    </TouchableOpacity>
+  </View>
+</View>
 
-You have a project. Now it's time to set up your development environment so that you can start developing.
+);
+
+return ( <View style={styles.container}> <Text style={styles.title}>Hot Wheels Collection 2025</Text>
+
+{/* Menu de lotes */}
+  <View style={styles.loteMenu}>
+    {lotes.map((lote) => (
+      <TouchableOpacity
+        key={lote}
+        style={[styles.loteButton, selectedLote === lote && styles.loteButtonActive]}
+        onPress={() => setSelectedLote(lote)}
+      >
+        <Text style={styles.loteButtonText}>Lote {lote}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+
+  {/* Lista de carros filtrada pelo lote selecionado */}
+  <FlatList
+    data={cars.filter((car) => car.lote === selectedLote)}
+    keyExtractor={(item) => item.id.toString()}
+    renderItem={renderCar}
+  />
+</View>
+
+); }
+
+const styles = StyleSheet.create({ container: { flex: 1, padding: 16, backgroundColor: "#fff", }, title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 12, }, loteMenu: { flexDirection: "row", justifyContent: "center", flexWrap: "wrap", marginBottom: 16, }, loteButton: { borderWidth: 1, borderColor: "#888", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, margin: 4, }, loteButtonActive: { backgroundColor: "#007bff", borderColor: "#007bff", }, loteButtonText: { color: "#000", }, card: { padding: 12, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, marginBottom: 12, backgroundColor: "#fafafa", }, carName: { fontSize: 16, fontWeight: "600", }, carInfo: { fontSize: 13, color: "#666", marginBottom: 8, }, actions: { flexDirection: "row", gap: 8, }, button: { paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#555", borderRadius: 6, marginRight: 8, }, buttonActive: { backgroundColor: "#28a745", borderColor: "#28a745", }, buttonText: { color: "#000", fontWeight: "500", }, });
+
